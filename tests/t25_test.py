@@ -14,7 +14,7 @@ def nav(pg, t): pg.evaluate(f"document.querySelector('[data-a=\"nav:{t}\"]').cli
 try:
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1243/chrome-linux64/chrome')
-        pg = b.new_page(viewport={'width': 390, 'height': 844}); pg.on('pageerror', lambda e: errs.append('JS: ' + str(e)))
+        pg = b.new_page(bypass_csp=True, viewport={'width': 390, 'height': 844}); pg.on('pageerror', lambda e: errs.append('JS: ' + str(e)))
         pg.goto('http://localhost:8781/' + html.name); ready(pg)
         r = pg.evaluate("[NG, GEN_SPR.length, GEN_SPR.every(n => SPR[n]), [...Array(NG)].map((_, i) => hue(i)).every(h => h !== undefined), UPG.length, ACH.filter(a => /^g\\d+_/.test(a.id)).length, GENS[24].n, D(GENS[24].c).toString()]")
         print('makers', r); assert r[0] == 25 and r[1] == 25 and r[2] and r[3] and r[5] == 125 and r[7] == '1e+400', r
@@ -28,7 +28,7 @@ try:
         pg.evaluate("S.energy = D('1e500'); for (let i = 10; i < NG; i++) buyGen(i, 1); calc()")
         r = pg.evaluate("[S.gens.slice(10).every(g => g === 1), C.prod.slice(14).every(p => p.gt(0)), S.energy.gt(0)]"); assert all(r), r
         # Fabricators V and VI turn on autobuyers 15-25
-        pg.evaluate("for (const id of ['a4','a5','a6','a13','a14','a15']) S.upg[id] = 1; S.inf.root = 1; S.inf['break'] = 1; dirty(); fxCheck(); calc()")
+        pg.evaluate("for (const id of ['a4','a5','a6','a13','a14','a15']) S.upg[id] = 1; S.inf.root = 1; S.inf['break'] = 1; dirty(); fxCheck(); calc(); autoWatch()")
         assert pg.evaluate('!!FX.flag.broken'), 'break'
         assert pg.evaluate("FX.ag.slice(14).every(Boolean) && FX.ag.length === NG")
         pg.evaluate("S.energy = D('1e500'); S.auto.gens = Array(NG).fill(1); const before = S.gens.slice(); for (let k = 0; k < 30; k++) tick(0.1); window.__auto = S.gens.slice(14).map((g, i) => g - before[14 + i])")

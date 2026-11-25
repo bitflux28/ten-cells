@@ -12,7 +12,7 @@ def ready(pg):
 try:
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1243/chrome-linux64/chrome')
-        pg = b.new_page(viewport={'width': 390, 'height': 844}, device_scale_factor=2); pg.on('pageerror', lambda e: errs.append('JS: ' + str(e)))
+        pg = b.new_page(bypass_csp=True, viewport={'width': 390, 'height': 844}, device_scale_factor=2); pg.on('pageerror', lambda e: errs.append('JS: ' + str(e)))
         pg.goto('http://localhost:8782/' + html.name); ready(pg)
         assert pg.evaluate("[S.set.fps, S.set.px, PXS, TCAPP]") == [60, 3, 3, False]
         pg.screenshot(path=str(out / 'sky.png'))

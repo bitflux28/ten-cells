@@ -28,24 +28,29 @@ const BROWSER_ARGS: &str = "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreen
 
 // the little atom that sits in the corner while the game is collapsed. It redraws ~15 times a second and nothing else.
 const MINI_HTML: &str = r##"<!doctype html><html><head><meta charset="utf-8"><style>
-html,body{margin:0;background:transparent;overflow:hidden;user-select:none;cursor:pointer;font:700 11px Consolas,monospace;color:#fff}
-#w{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-canvas{width:72px;height:72px;image-rendering:pixelated}
-#e{margin-top:2px;padding:1px 6px;background:#1b1845;box-shadow:inset 0 0 0 2px #3d3780;text-shadow:1px 1px 0 #0b0a1f;white-space:nowrap}
-#x{position:fixed;top:2px;right:2px;width:16px;height:16px;line-height:15px;text-align:center;background:#ff4f73;color:#fff;display:none}
-body:hover #x{display:block}
-</style></head><body><div id="w" title="Ten Cells: click to open, drag to move"><canvas id="c" width="36" height="36"></canvas><div id="e">Ten Cells</div></div><div id="x" title="Quit Ten Cells">x</div>
+@font-face{font-family:'PX';src:url(%FONT%)}
+html,body{margin:0;height:100%;background:#12102e;overflow:hidden;user-select:none;cursor:pointer;font-family:'PX',Consolas,monospace;color:#fff}
+#p{position:fixed;inset:0;box-shadow:inset 0 0 0 2px #0b0a1f,inset 5px 5px 0 #3d3780,inset -5px -5px 0 #110e30;background:#1b1845;display:flex;flex-direction:column;align-items:center;padding-top:7px;box-sizing:border-box}
+#t{font-size:10px;color:#a3a8d6;display:flex;align-items:center;gap:4px;letter-spacing:.5px}
+#t i{width:5px;height:5px;background:#4fe89a;animation:b 1.2s steps(2) infinite}@keyframes b{50%{opacity:.25}}
+canvas{width:76px;height:76px;image-rendering:pixelated;margin-top:1px}
+#e{font-size:16px;line-height:16px;color:#fff;text-shadow:2px 2px 0 #0b0a1f;white-space:nowrap}
+#r{font-size:10px;color:#45c8f5;margin-top:2px;white-space:nowrap}
+#x{position:fixed;top:5px;right:5px;width:14px;height:14px;line-height:13px;font-size:10px;text-align:center;background:#ff4f73;color:#fff;box-shadow:inset 0 -2px 0 #8f1d3c}
+</style></head><body><div id="p" title="Ten Cells: click to open, drag to move"><div id="t"><i></i>TEN CELLS</div><canvas id="c" width="38" height="38"></canvas><div id="e">...</div><div id="r"></div></div><div id="x" title="Quit Ten Cells">x</div>
 <script>
 const c = document.getElementById('c'), x = c.getContext('2d'), t0 = performance.now();
 const px = (X, Y, col) => { x.fillStyle = col; x.fillRect(Math.round(X), Math.round(Y), 1, 1); };
+const ST = [...Array(14)].map((_, k) => [(k * 97 + 13) % 38, (k * 53 + 7) % 38, k]);
 function draw(t) {
-  const a = (t - t0) / 1000; x.clearRect(0, 0, 36, 36);
+  const a = (t - t0) / 1000; x.fillStyle = '#12102e'; x.fillRect(0, 0, 38, 38);
+  for (const [sx, sy, k] of ST) if (Math.sin(a * 1.3 + k) > -0.3) px(sx, sy, k % 3 ? '#3d3780' : '#9ab8ff');
   [[0, '#45c8f5'], [1.05, '#8a63ff'], [-1.05, '#3466f0']].forEach(([rot, col], k) => {
-    const P = th => { const ex = Math.cos(th) * 15, ey = Math.sin(th) * 5.5; return [18 + ex * Math.cos(rot) - ey * Math.sin(rot), 18 + ex * Math.sin(rot) + ey * Math.cos(rot)]; };
+    const P = th => { const ex = Math.cos(th) * 15, ey = Math.sin(th) * 5.5; return [19 + ex * Math.cos(rot) - ey * Math.sin(rot), 19 + ex * Math.sin(rot) + ey * Math.cos(rot)]; };
     for (let i = 0; i < 48; i += 2) { const [X, Y] = P(i / 48 * 6.283); px(X, Y, col); }
-    const [X, Y] = P(a * (1.6 + k * 0.4) + k * 2); x.fillStyle = '#fff'; x.fillRect(Math.round(X) - 1, Math.round(Y) - 1, 2, 2);
+    const [X, Y] = P(a * (1.6 + k * 0.4) + k * 2); x.fillStyle = '#0b0a1f'; x.fillRect(Math.round(X) - 2, Math.round(Y) - 2, 4, 4); x.fillStyle = '#fff'; x.fillRect(Math.round(X) - 1, Math.round(Y) - 1, 2, 2);
   });
-  const R = 4.5; for (let dy = -5; dy <= 5; dy++) for (let dx = -5; dx <= 5; dx++) { const d = (dx * dx + dy * dy) / (R * R); if (d > 1) continue; const l = (-dx * 0.55 - dy * 0.6) / R + Math.sqrt(1 - d) * 0.6; px(18 + dx, 18 + dy, l > 0.85 ? '#ffffff' : l > 0.5 ? '#9ab8ff' : l > 0.15 ? '#3466f0' : '#1d3492'); }
+  const R = 5; for (let dy = -6; dy <= 6; dy++) for (let dx = -6; dx <= 6; dx++) { const d = (dx * dx + dy * dy) / (R * R); if (d > 1) continue; const l = (-dx * 0.55 - dy * 0.6) / R + Math.sqrt(1 - d) * 0.6; px(19 + dx, 19 + dy, d > 0.8 ? '#0b0a1f' : l > 0.85 ? '#ffffff' : l > 0.5 ? '#9ab8ff' : l > 0.15 ? '#3466f0' : '#1d3492'); }
   setTimeout(() => requestAnimationFrame(draw), 66);
 }
 requestAnimationFrame(draw);
@@ -54,29 +59,49 @@ addEventListener('pointerdown', e => { if (e.target.id === 'x') return; down = [
 addEventListener('pointermove', e => { if (down && !dragging && Math.hypot(e.screenX - down[0], e.screenY - down[1]) > 4) { dragging = true; window.ipc.postMessage('drag'); } });
 addEventListener('pointerup', e => { if (e.target.id === 'x') { window.ipc.postMessage('quit'); return; } if (down && !dragging) window.ipc.postMessage('restore'); down = null; });
 addEventListener('contextmenu', e => e.preventDefault());
-window.setE = s => { const [e, r] = s.split('|'); const el = document.getElementById('e'); el.textContent = e; el.title = (r || '') + ' energy per second'; };
+window.setE = s => { const [e, r] = s.split('|'); document.getElementById('e').textContent = e; document.getElementById('r').textContent = r ? '+' + r + '/s' : ''; };
 </script></body></html>"##;
+
+// the game's own pixel font, taken from the embedded page so the little window matches the game
+fn px_font() -> String {
+    let g = std::str::from_utf8(GAME).unwrap_or("");
+    g.find("font-family:'PX Numbers';font-display:block;src:url(")
+        .and_then(|i| { let a = i + "font-family:'PX Numbers';font-display:block;src:url(".len(); g[a..].find(')').map(|b| g[a..a + b].to_string()) })
+        .unwrap_or_default()
+}
+
+// Windows 11 rounds borderless windows; the atom panel is pixel art, so ask for square corners
+#[cfg(windows)]
+fn square_corners(w: &Window) {
+    use tao::platform::windows::WindowExtWindows;
+    #[link(name = "dwmapi")]
+    extern "system" { fn DwmSetWindowAttribute(h: isize, attr: u32, v: *const core::ffi::c_void, n: u32) -> i32; }
+    let pref: u32 = 1; // DWMWCP_DONOTROUND
+    unsafe { DwmSetWindowAttribute(w.hwnd() as isize, 33, &pref as *const u32 as *const _, 4); }
+}
 
 // opens the atom in the bottom-right corner of the screen the game is on, just above the taskbar
 fn open_mini(target: &tao::event_loop::EventLoopWindowTarget<UserEvent>, main: &Window, ctx: &mut WebContext, proxy: tao::event_loop::EventLoopProxy<UserEvent>) -> Option<(Window, WebView)> {
     let b = WindowBuilder::new()
         .with_title("Ten Cells")
-        .with_inner_size(LogicalSize::new(96.0, 104.0))
+        .with_inner_size(LogicalSize::new(128.0, 142.0))
         .with_decorations(false)
-        .with_transparent(true)
+        .with_background_color((27, 24, 69, 255))
         .with_resizable(false)
         .with_always_on_top(true)
         .with_window_icon(Icon::from_rgba(ICON.to_vec(), 64, 64).ok());
     #[cfg(windows)]
     let b = b.with_skip_taskbar(true);
     let w = b.build(target).ok()?;
+    #[cfg(windows)]
+    square_corners(&w);
     if let Some(m) = main.current_monitor().or_else(|| w.primary_monitor()) {
         let (mp, ms, sz, k) = (m.position(), m.size(), w.outer_size(), m.scale_factor());
         w.set_outer_position(PhysicalPosition::new(mp.x + ms.width as i32 - sz.width as i32 - (16.0 * k) as i32, mp.y + ms.height as i32 - sz.height as i32 - (64.0 * k) as i32));
     }
     let b = WebViewBuilder::new_with_web_context(ctx)
-        .with_html(MINI_HTML)
-        .with_transparent(true)
+        .with_html(MINI_HTML.replace("%FONT%", &px_font()))
+        .with_background_color((27, 24, 69, 255))
         .with_devtools(false)
         .with_ipc_handler(move |req| { let _ = proxy.send_event(match req.body().as_str() { "drag" => UserEvent::Drag, "quit" => UserEvent::Quit, _ => UserEvent::Restore }); });
     #[cfg(windows)]
@@ -205,7 +230,7 @@ fn main() {
         .with_custom_protocol("tencells".into(), |_id, req| {
             // the game is one file; anything else it asks for (like version.json) isn't here
             if matches!(req.uri().path(), "/" | "" | "/index.html") {
-                Response::builder().header("Content-Type", "text/html; charset=utf-8").header("Cache-Control", "no-store").body(Cow::Borrowed(GAME)).unwrap()
+                Response::builder().header("Content-Type", "text/html; charset=utf-8").header("Cache-Control", "no-store").header("X-Content-Type-Options", "nosniff").header("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self' data: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'").body(Cow::Borrowed(GAME)).unwrap()
             } else {
                 Response::builder().status(404).body(Cow::Borrowed(&b""[..])).unwrap()
             }

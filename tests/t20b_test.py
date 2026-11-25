@@ -13,11 +13,11 @@ try:
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1243/chrome-linux64/chrome')
         # phone first: no extra tabs, narrow column
-        ph = b.new_page(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True); ph.on('pageerror', lambda e: errs.append('JS phone: ' + str(e)))
+        ph = b.new_page(bypass_csp=True, viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True); ph.on('pageerror', lambda e: errs.append('JS phone: ' + str(e)))
         ph.goto('http://localhost:8785/' + html.name); ready(ph)
         assert not ph.evaluate("TABS.some(t => t[0] === 'bosses')"), 'phone should not get PC tabs'
         ph.close()
-        pg = b.new_page(viewport={'width': 1400, 'height': 900}); pg.on('pageerror', lambda e: errs.append('JS: ' + str(e)))
+        pg = b.new_page(bypass_csp=True, viewport={'width': 1400, 'height': 900}); pg.on('pageerror', lambda e: errs.append('JS: ' + str(e)))
         pg.goto('http://localhost:8785/' + html.name); ready(pg)
         # permanent upgrades
         pg.evaluate("S.energy = D('1e25'); S.gens[0] = 50; S.gens[1] = 20; calc(); UI.tab = 'engine'; render()"); pg.wait_for_timeout(400)
@@ -34,8 +34,8 @@ try:
         assert pg.evaluate("permProd() === 3 && FX.cost < 1")
         # upgrades tab chip + page
         pg.evaluate("UI.tab = 'upgrades'; UI.sub.upg = 'tree'; render()"); pg.wait_for_timeout(300)
-        assert pg.evaluate("!!document.querySelector('.chip.permchip')")
-        pg.evaluate("document.querySelector('.chip.permchip').click()"); pg.wait_for_timeout(300)
+        assert pg.evaluate("!!document.querySelector('.btn.permbtn')")
+        pg.evaluate("document.querySelector('.btn.permbtn').click()"); pg.wait_for_timeout(300)
         assert pg.evaluate("UI.sub.upg === 'perm' && document.querySelectorAll('[data-a^=\"perm:\"]').length === 8")
         pg.screenshot(path=str(out / 'perm-page.png'))
         # tree view resets after a prestige

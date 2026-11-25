@@ -12,7 +12,7 @@ def ready(pg):
 try:
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1243/chrome-linux64/chrome', args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'])
-        pg = b.new_page(viewport={'width': 1300, 'height': 900}); pg.on('pageerror', lambda e: errs.append('JS: ' + str(e)))
+        pg = b.new_page(bypass_csp=True, viewport={'width': 1300, 'height': 900}); pg.on('pageerror', lambda e: errs.append('JS: ' + str(e)))
         pg.goto('http://localhost:8786/' + html.name); ready(pg)
         # story: no 'different days' missions, later time missions shorter
         r = pg.evaluate("[CHAPTERS.some(c => c.m.some(m => /different days/.test(m[0]))), CHAPTERS[9].m.map(m => m[0]).join(' | '), CHAPTERS[23].m.map(m => m[0]).join(' | ')]"); print('story', r)
@@ -52,6 +52,15 @@ try:
         pg.evaluate("S.auto.rebM = 'mult'; S.auto.rebX = '1000'; S.frag = D(1e9); S.runE = D('1e14'); for (let k = 0; k < 20; k++) tick(0.1)"); assert pg.evaluate("S.cnt.reb") == n0 + 1, 'x-have rule fired too early'
         pg.evaluate("S.frag = D(1); S.runE = D('1e30'); for (let k = 0; k < 20; k++) tick(0.1)"); assert pg.evaluate("S.cnt.reb") == n0 + 2, 'x-have rule did not fire'
         print('automation rules OK; anext:', pg.evaluate("TX.anext('reb')"))
+        # new automations start off, with a note; old choices stick after a prestige
+        pg.evaluate("window.__tt = []; const T0 = toast; toast = function (t) { __tt.push(t); return T0.apply(this, arguments); }; S.upg.a4 = 1; dirty(); fxCheck(); calc(); autoWatch()")
+        r = pg.evaluate("[S.auto.gens.slice(0, 3).join(), __tt.some(t => /start off/.test(t))]"); print('new autobuyers:', r); assert r == ['0,0,0', True], r
+        pg.evaluate("S.auto.gens[0] = 1; S.runE = D('1e15'); prestige('reb'); S.upg.a4 = 1; dirty(); fxCheck(); calc(); autoWatch()"); assert pg.evaluate("S.auto.gens[0]") == 1, 'choice lost after prestige'
+        # dimensions explain how to unlock
+        pg.evaluate("closeSheet(); S.cnt.asc = 1; UI.tab = 'worlds'; UI.sub.wor = 'dims'; render()"); pg.wait_for_timeout(400)
+        t = pg.evaluate("document.querySelector('.dunlock')?.textContent || ''"); print('how-to:', t[:200], pg.evaluate("[UI.tab, UI.sub.wor, S.cnt.asc, document.getElementById('page').textContent.slice(0, 200)]")); assert 'How to unlock a dimension' in t and 'Next up' in t
+        assert pg.evaluate("document.querySelectorAll('.world .rqh').length") > 0
+        pg.screenshot(path=str(out / 'dims.png'))
         b.close()
 finally: srv.terminate()
 assert not errs, errs[:3]
