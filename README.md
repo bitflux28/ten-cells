@@ -10,6 +10,8 @@ You can also install `downloads/TenCells-iPhone.mobileconfig` (Settings › Prof
 
 ## Files
 - `index.html`, `sw.js`, `manifest.webmanifest`, icons: the web app served by GitHub Pages (from the `gh-pages` branch)
+- `downloads/Ten Cells native for Windows.zip`: the new native Windows app (C++, 2 MB, starts instantly). Unzip and run `Ten Cells.exe`. Stage 1 of 2: engine, upgrades, every prestige layer, saves and sound. Worlds, story, bosses and pets come next. To bring your progress over, Export in the old version and Import in this one.
+- `native/`: its source (raylib + QuickJS + C++). See `native/README.md`.
 - `downloads/Ten Cells for Windows.7z`: the Windows app. Right-click › Extract All (Windows 11 opens .7z on its own; on Windows 10 use 7-Zip), then run `Ten Cells.exe`. Saves from older Windows versions carry over.
 - `downloads/Ten Cells.html`: the whole game in one file. Open it in any browser.
 - `downloads/Ten Cells web app (iPhone).zip`: the web app, ready to drop on any static host
