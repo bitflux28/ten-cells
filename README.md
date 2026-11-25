@@ -1,5 +1,15 @@
 # Ten Cells
 
-An idle game. Play it at https://bitflux28.github.io/ten-cells/
+An idle game about an ancient engine that makes energy from nothing. It climbs from an atom to the multiverse and past it. Current version: **0.17.0**.
 
-On iPhone: open that link in Safari, tap Share, then Add to Home Screen. It works offline after that.
+**Play:** https://bitflux28.github.io/ten-cells/
+
+## On iPhone
+Open the link above in Safari, tap Share, then Add to Home Screen. It plays full screen and works offline after the first open.
+You can also install `downloads/TenCells-iPhone.mobileconfig` (Settings › Profile Downloaded › Install) to add the icon in one step.
+
+## Files
+- `index.html`, `sw.js`, `manifest.webmanifest`, icons: the web app served by GitHub Pages (from the `gh-pages` branch)
+- `downloads/Ten Cells.html`: the whole game in one file. Open it in any browser.
+- `downloads/Ten Cells web app (iPhone).zip`: the web app, ready to drop on any static host
+- `notes/`: release notes and preview pictures
