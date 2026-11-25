@@ -1,6 +1,6 @@
 # Ten Cells
 
-An idle game about an ancient engine that makes energy from nothing. It climbs from an atom to the multiverse and past it. Current version: **0.18.0**.
+An idle game about an ancient engine that makes energy from nothing. It climbs from an atom to the multiverse and past it. Current version: **0.18.1**.
 
 **Play:** https://bitflux28.github.io/ten-cells/
 
@@ -10,7 +10,7 @@ You can also install `downloads/TenCells-iPhone.mobileconfig` (Settings › Prof
 
 ## Files
 - `index.html`, `sw.js`, `manifest.webmanifest`, icons: the web app served by GitHub Pages (from the `gh-pages` branch)
-- `downloads/Ten Cells native for Windows.zip`: the new native Windows app (C++, 2 MB, starts instantly). Unzip and run `Ten Cells.exe`. Stage 1 of 2: engine, upgrades, every prestige layer, saves and sound. Worlds, story, bosses and pets come next. To bring your progress over, Export in the old version and Import in this one.
+- `downloads/Ten Cells native for Windows.zip`: the new native Windows app (C++, 2 MB, starts instantly). Unzip and run `Ten Cells.exe`. Experimental and paused: it has the engine, upgrades, every prestige layer, saves and sound, but no worlds, story, bosses or pets screens. The regular Windows app below is the main one.
 - `native/`: its source (raylib + QuickJS + C++). See `native/README.md`.
 - `downloads/Ten Cells for Windows.7z`: the Windows app. Right-click › Extract All (Windows 11 opens .7z on its own; on Windows 10 use 7-Zip), then run `Ten Cells.exe`. Saves from older Windows versions carry over.
 - `downloads/Ten Cells.html`: the whole game in one file. Open it in any browser.
