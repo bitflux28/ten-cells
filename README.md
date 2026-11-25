@@ -10,9 +10,9 @@ You can also install `downloads/TenCells-iPhone.mobileconfig` (Settings › Prof
 
 ## Files
 - `index.html`, `sw.js`, `manifest.webmanifest`, icons: the web app served by GitHub Pages (from the `gh-pages` branch)
-- `downloads/Ten Cells native for Windows.zip`: the new native Windows app (C++, 2 MB, starts instantly). Unzip and run `Ten Cells.exe`. Experimental and paused: it has the engine, upgrades, every prestige layer, saves and sound, but no worlds, story, bosses or pets screens. The regular Windows app below is the main one.
-- `native/`: its source (raylib + QuickJS + C++). See `native/README.md`.
-- `downloads/Ten Cells for Windows.7z`: the Windows app. Right-click › Extract All (Windows 11 opens .7z on its own; on Windows 10 use 7-Zip), then run `Ten Cells.exe`. Saves from older Windows versions carry over.
+- `downloads/Ten Cells for Windows.zip`: **the Windows app** (under 1 MB). Unzip it and run `Ten Cells.exe`. It's a small Rust app that shows the exact same game in WebView2, the Edge engine built into Windows 10 and 11, so the game looks identical. The first time it starts, it brings over your save from the older Windows app. Source in `windows/`.
+- `downloads/Ten Cells for Windows (old, Electron).7z`: the previous Windows app, which bundles its own copy of Chrome (74 MB). Keep it only if the new one won't start on your PC.
+- `downloads/Ten Cells native for Windows.zip`, `native/`: an experimental C++ remake, paused. It doesn't have the worlds, story, bosses or pets screens.
 - `downloads/Ten Cells.html`: the whole game in one file. Open it in any browser.
 - `downloads/Ten Cells web app (iPhone).zip`: the web app, ready to drop on any static host
 - `notes/`: release notes and preview pictures
