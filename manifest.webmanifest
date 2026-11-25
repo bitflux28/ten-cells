@@ -1,0 +1,23 @@
+{
+ "name": "Ten Cells",
+ "short_name": "Ten Cells",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#03040b",
+ "theme_color": "#03040b",
+ "icons": [
+  {
+   "src": "icon180.png",
+   "sizes": "180x180",
+   "type": "image/png"
+  },
+  {
+   "src": "icon512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  }
+ ]
+}
