@@ -10,7 +10,7 @@ You can also install `downloads/TenCells-iPhone.mobileconfig` (Settings › Prof
 
 ## Files
 - `index.html`, `sw.js`, `manifest.webmanifest`, icons: the web app served by GitHub Pages (from the `gh-pages` branch)
-- `downloads/Ten Cells for Windows.zip`: **the Windows app** (under 1 MB). Unzip it and run `Ten Cells.exe`. It's a small Rust app that shows the exact same game in WebView2, the Edge engine built into Windows 10 and 11, so the game looks identical. The first time it starts, it brings over your save from the older Windows app. Source in `windows/`.
+- `downloads/Ten Cells for Windows.zip`: **the Windows game**, a native Rust app (one 7 MB `Ten Cells.exe`, no browser inside). Same rules and numbers as the web version, same art, synthesised music. Saves to Documents › Ten Cells, brings over saves from the older Windows apps, and export codes work both ways with the web version. Source in `native/` (`native/bake_assets.py` renders the art out of the web game). The older WebView2 wrapper is still in `windows/`.
 - `downloads/Ten Cells.html`: the whole game in one file. Open it in any browser.
 - `downloads/Ten Cells web app (iPhone).zip`: the web app, ready to drop on any static host
 - `notes/`: release notes for the latest versions
