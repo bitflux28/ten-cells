@@ -13,6 +13,6 @@ An idle game about an ancient engine that makes energy from nothing. It climbs f
 - `tests/`: the browser tests used before each release
 
 ## Privacy and security
-- The game itself makes no network requests. (The Windows app makes one at launch: it reads `downloads/app.json` from GitHub to see if a newer app exists.) No accounts, no tracking, no analytics. Your save stays on your device.
+- The game itself makes no network requests. (The Windows app makes a few at launch: it reads `version.json` from GitHub and, if the game is newer, downloads the new game file and offers a restart, so game updates need no new zip. It also reads `downloads/app.json` to see if a newer app shell exists.) No accounts, no tracking, no analytics. Your save stays on your device.
 - A Content Security Policy blocks any script, connection or form that doesn't come from the game itself.
 - Playing from GitHub Pages doesn't show anyone your IP address. GitHub hosts the page; the game never talks to anything.
