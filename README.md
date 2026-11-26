@@ -1,6 +1,6 @@
 # Ten Cells
 
-An idle game about an ancient engine that makes energy from nothing. It climbs from an atom to the multiverse and past it. Current version: **0.21.14**.
+An idle game about an ancient engine that makes energy from nothing. It climbs from an atom to the multiverse and past it. Current version: **0.21.15**.
 
 **Play:** https://bitflux28.github.io/ten-cells/
 

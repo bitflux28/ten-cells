@@ -16,7 +16,7 @@ try:
         pg.goto('http://localhost:8786/' + html.name); ready(pg)
         # story: no 'different days' missions, later time missions shorter
         r = pg.evaluate("[CHAPTERS.some(c => c.m.some(m => /different days/.test(m[0]))), CHAPTERS[9].m.map(m => m[0]).join(' | '), CHAPTERS[23].m.map(m => m[0]).join(' | ')]"); print('story', r)
-        assert not r[0] and '2 hours' in r[1] and '4.3 hours' in r[2], r
+        assert not r[0] and '48 minutes' in r[1] and '104 minutes' in r[2], r
         # daily rewards
         pg.evaluate("S.gens[0] = 100; S.gens[1] = 40; calc(); UI.tab = 'engine'; render()"); pg.wait_for_timeout(1500)
         assert pg.evaluate("!!document.querySelector('.daily.rdy')"), 'daily card not ready'
