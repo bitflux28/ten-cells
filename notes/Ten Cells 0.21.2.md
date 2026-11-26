@@ -1,0 +1,4 @@
+# Ten Cells 0.21.2
+
+- Smoother animations: the 3D characters, bosses and pets now draw at the chosen frame rate instead of a fixed 30 fps
+- New frame rates in Settings: 120 fps and Max (every refresh of your screen). Particles, lightning, ripples and the atom keep the same speed at any frame rate
