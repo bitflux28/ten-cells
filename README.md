@@ -7,6 +7,7 @@ An idle game about an ancient engine that makes energy from nothing. It climbs f
 ## Files
 - `index.html`, `sw.js`, `manifest.webmanifest`, icons: the web app served by GitHub Pages (from the `gh-pages` branch)
 - `wasm/`: the Rust source of the small WebAssembly module that paints the sky (built into `index.html`)
+- `downloads/Ten Cells for Windows.zip`: **the Windows app** (103 MB). Unzip it and run `Ten Cells.exe`. It's the same game with its own browser engine (Electron) built in, so no browser is needed. F11 is full screen. This download is the version the zip was built from, 0.21.2.
 - `downloads/Ten Cells.html`: the whole game in one file. Open it in any browser.
 - `notes/`: release notes for the latest versions
 - `tests/`: the browser tests used before each release
