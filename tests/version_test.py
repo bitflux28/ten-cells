@@ -2,7 +2,7 @@
 import json, re
 s = open('index.html').read(); v = re.search(r'BUILD_V = "([\d.]+)"', s).group(1)
 assert json.load(open('version.json'))['v'] == v, 'version.json'
-assert f'**{v}**' in open('README.md').read(), 'README'
+assert f'build {v}' in open('README.md').read() or f'**{v}**' in open('README.md').read(), 'README'
 assert f'BUILD_V = "{v}"' in open('downloads/Ten Cells.html').read(), 'downloads copy'
 assert re.search(r'CHANGELOG = \[\{"v": "%s"' % re.escape(v), s), 'CHANGELOG'
 print('version OK', v)
