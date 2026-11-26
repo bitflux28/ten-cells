@@ -1,1 +1,1 @@
-{"v": "0.21.13", "n": ["Upgrade tree: hexagon nodes are spaced out so they no longer sit on top of each other"]}
+{"v": "0.21.14", "n": ["The game now checks for a new version the moment it opens (it used to wait 15 seconds), and again whenever you come back to it"]}
