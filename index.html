@@ -4172,7 +4172,7 @@ function showUpdate(j) {
   el.innerHTML = `<div class="upd-ic">${ico('arrowup', 28)}</div><div class="grow"><b>${esc(UPD_LORE[Math.abs(hsh('upd' + j.v) * 1e6 | 0) % UPD_LORE.length])} · ${esc(j.v)}</b><small>${stuck ? 'Close the game and open it again to finish updating.' : esc((j.n || [])[0] || 'The cells have learned something new.')}</small></div>${stuck ? '' : '<button class="btn on" id="updgo">Update</button>'}<button class="updx" id="updx" aria-label="Remind me later">✕</button>`;
   document.body.appendChild(el); sfx('ach'); haptic();
   $('#updx').onclick = () => el.remove();
-  const go = $('#updgo'); if (go) go.onclick = () => { try { sessionStorage.setItem('ie_upd', j.v); } catch (e) { } save(); go.disabled = true; el.querySelector('small').textContent = 'Saving and updating…'; setTimeout(() => location.reload(), 250); };
+  const go = $('#updgo'); if (go) go.onclick = () => { try { sessionStorage.setItem('ie_upd', j.v); } catch (e) { } save(); go.disabled = true; el.querySelector('small').textContent = 'Saving and updating…'; const done = () => location.reload(); Promise.race([Promise.all([fetch(location.pathname, { cache: 'reload' }), fetch('index.html', { cache: 'reload' })]), new Promise(r => setTimeout(r, 5000))]).then(done, done); }; // refresh the browser's cached copy first, or the old file comes back and the banner returns
 }
 // after an update: list what changed since the version this save last ran
 function whatsNew() {

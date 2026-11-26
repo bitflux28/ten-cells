@@ -1,1 +1,1 @@
-{"v": "0.21.7", "n": ["The Windows app now checks for a new version every 2.5 minutes while it is open, not just at launch", "Update messages got a story: a new pulse reaches the Engine"]}
+{"v": "0.21.9", "n": ["Fixed the update banner coming back after updating: the page now refreshes its cached copy before reloading"]}
