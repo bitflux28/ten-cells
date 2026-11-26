@@ -18,9 +18,9 @@ pub struct App {
     pub toasts: Vec<Toast>, pub floats: Vec<Float>, pub flash: Option<Flash>, pub log: Vec<(f64, String, String)>, pub hist: Vec<(f64, f64)>,
     pub buy: f64, pub cat: String, pub dim_sel: Option<usize>, pub rx_a: f64, pub rx_hit: f64, pub rings: Vec<(f64, bool)>, pub spin_b: f64,
     // input
-    pub mx: f32, pub my: f32, pub down: bool, pub pressed: bool, pub click: bool, pub drag: f32, press_y: f32, press_scroll: f32, pub dragging: bool, pub clip: Rect, hold_t: f64,
+    pub mx: f32, pub my: f32, pub down: bool, pub pressed: bool, pub click: bool, pub drag: f32, press_y: f32, pub press_scroll: f32, pub dragging: bool, pub clip: Rect, hold_t: f64,
     pub cw: f32, pub x0: f32, pub lw: f32, pub lh: f32, pub time: f64, pub input: String, pub input_key: String,
-    save_t: f64, hist_t: f64, pub prestige_fx: f64, last_fx: f64, pub dlg: Option<(usize, String, usize)>, pub full: bool,
+    save_t: f64, hist_t: f64, pub prestige_fx: f64, last_fx: f64, pub dlg: Option<(usize, String, usize)>, pub full: bool, toast_rects: Vec<(Rect, String)>, pub last_sheet: Sheet, last_real: f64,
 }
 pub const NAV: [(&str, &str, &str); 6] = [("engine", "Engine", "core"), ("upgrades", "Upgrades", "tree"), ("prestige", "Prestige", "star"), ("worlds", "Worlds", "planet"), ("crew", "Crew", "person"), ("stats", "Stats", "bars")];
 
@@ -30,14 +30,14 @@ impl App {
         let mut sub = std::collections::HashMap::new(); for (k, v) in [("upgrades", "tree"), ("prestige", "reb"), ("worlds", "dims"), ("crew", "story"), ("stats", "stats")] { sub.insert(k.to_string(), v.to_string()); }
         let mut a = App { g, gfx, spr_img, tab: "engine".into(), sub, scroll: Default::default(), sheet: Sheet::None, sheet_scroll: 0.0, toasts: vec![], floats: vec![], flash: None, log: vec![], hist: vec![],
             buy: 1.0, cat: "gen".into(), dim_sel: None, rx_a: 0.0, rx_hit: 0.0, rings: vec![], spin_b: 0.0, mx: 0.0, my: 0.0, down: false, pressed: false, click: false, drag: 0.0, press_y: 0.0, press_scroll: 0.0, dragging: false,
-            clip: Rect::new(0.0, 0.0, 9999.0, 9999.0), hold_t: 0.0, cw: 390.0, x0: 0.0, lw: 390.0, lh: 844.0, time: 0.0, input: String::new(), input_key: String::new(), save_t: 0.0, hist_t: 0.0, prestige_fx: 0.0, last_fx: 0.0, dlg: None, full: false };
+            clip: Rect::new(0.0, 0.0, 9999.0, 9999.0), hold_t: 0.0, cw: 390.0, x0: 0.0, lw: 390.0, lh: 844.0, time: 0.0, input: String::new(), input_key: String::new(), save_t: 0.0, hist_t: 0.0, prestige_fx: 0.0, last_fx: 0.0, dlg: None, full: false, toast_rects: vec![], last_sheet: Sheet::None, last_real: now_ms() };
         crate::fmt::set_notation(&a.g.s.set.not);
         if a.g.s.set.tos == 0.0 { a.sheet = Sheet::Terms }
         a
     }
     pub fn sub(&self, t: &str) -> String { self.sub.get(t).cloned().unwrap_or_default() }
     pub fn set_sub(&mut self, t: &str, v: &str) { self.sub.insert(t.into(), v.into()); }
-    pub fn toast(&mut self, text: impl Into<String>, spr: &str, col: Color) { let text = text.into(); self.log.push((now_ms(), text.clone(), spr.into())); self.toasts.push(Toast { text, spr: spr.into(), col, t: 0.0 }); if self.toasts.len() > 4 { self.toasts.remove(0); } }
+    pub fn toast(&mut self, text: impl Into<String>, spr: &str, col: Color) { let text = text.into(); self.log.push((now_ms(), text.clone(), spr.into())); self.toasts.push(Toast { text, spr: spr.into(), col, t: 0.0 }); if self.toasts.len() > 3 { self.toasts.remove(0); } }
     pub fn hover(&self, r: Rect) -> bool { r.contains(vec2(self.mx, self.my)) && self.clip.contains(vec2(self.mx, self.my)) }
     /// a tap inside r (not a scroll drag)
     pub fn hit(&mut self, r: Rect) -> bool { if self.click && self.hover(r) { self.click = false; true } else { false } }
@@ -96,24 +96,32 @@ impl App {
         let (mx, my) = mouse_position(); self.mx = mx / self.gfx.scale; self.my = my / self.gfx.scale;
         let touch = touches(); let now_down = is_mouse_button_down(MouseButton::Left) || !touch.is_empty();
         self.pressed = now_down && !self.down; self.click = false;
-        if self.pressed { self.press_y = self.my; self.press_scroll = *self.scroll.get(&self.scroll_key()).unwrap_or(&0.0); self.dragging = false; self.drag = 0.0; self.hold_t = 0.0 }
+        if self.pressed { self.press_y = self.my; self.press_scroll = if self.sheet != Sheet::None { self.sheet_scroll } else { *self.scroll.get(&self.scroll_key()).unwrap_or(&0.0) }; self.dragging = false; self.drag = 0.0; self.hold_t = 0.0 }
         if now_down { self.drag = self.my - self.press_y; if self.drag.abs() > 8.0 { self.dragging = true } self.hold_t += get_frame_time() as f64 }
         if !now_down && self.down && !self.dragging { self.click = true }
         self.down = now_down;
         // typing into a text field
-        if !self.input_key.is_empty() { while let Some(ch) = get_char_pressed() { if !ch.is_control() && self.input.len() < 4000 { self.input.push(ch) } } if is_key_pressed(KeyCode::Backspace) { self.input.pop(); } if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::V) { if let Some(t) = miniquad::window::clipboard_get() { self.input.push_str(t.trim()) } } }
+        if !self.input_key.is_empty() && (is_key_pressed(KeyCode::Escape) || (self.input_key == "import" && self.sheet != Sheet::Import)) { self.input_key.clear(); self.input.clear(); while get_char_pressed().is_some() {} }
+        if !self.input_key.is_empty() { while let Some(ch) = get_char_pressed() { if !ch.is_control() && self.input.len() < 4000 { self.input.push(ch) } } if is_key_pressed(KeyCode::Backspace) { self.input.pop(); } if (is_key_down(KeyCode::LeftControl) || is_key_down(KeyCode::RightControl)) && is_key_pressed(KeyCode::V) { if let Some(t) = miniquad::window::clipboard_get() { self.input.push_str(t.trim()) } } }
     }
     pub fn scroll_key(&self) -> String { if self.sheet != Sheet::None { "sheet".into() } else { format!("{}:{}", self.tab, self.sub(&self.tab)) } }
 
     pub fn frame(&mut self) {
         let dt = get_frame_time().min(0.25) as f64; self.time += dt;
         self.layout(); self.read_input();
-        // ---- game time
+        // a tap on a notification only dismisses it
+        if self.click { if let Some((_, t)) = self.toast_rects.iter().find(|r| r.0.contains(vec2(self.mx, self.my))).cloned() { if let Some(q) = self.toasts.iter_mut().find(|q| q.text == t) { q.t = q.t.max(2.8) } self.click = false; self.pressed = false; } }
+        // while a pop-up or story scene is open, the screen behind it gets no taps
+        let modal = self.sheet != Sheet::None || self.dlg.is_some(); let (m_click, m_pressed) = (self.click, self.pressed);
+        if modal { self.click = false; self.pressed = false; }
+        // ---- game time. If the window was minimized or the PC slept, catch up like offline progress
+        let real = now_ms(); let gap = (real - self.last_real) / 1000.0; self.last_real = real;
+        if gap > 3.0 { self.g.s.last = real - gap * 1000.0; if let Some((_, used, _, got)) = self.g.offline() { if used > 30.0 { self.toast(format!("Caught up {}: +{} energy", fmt_t(used), fmt(got)), "moonz", c("cyan")) } } }
         self.g.tick(dt, false);
         self.rx_a += 0.016 * dt * 60.0 * (1.0 + (crate::game::oom(self.g.c.eps) / 25.0).min(4.0)) * (1.0 + self.spin_b) * if self.g.s.set.fx > 0.0 { 1.0 } else { 0.0 };
         self.rx_hit *= 0.8f64.powf(dt * 60.0); self.spin_b *= 0.9f64.powf(dt * 60.0);
         for r in self.rings.iter_mut() { r.0 += 1.6 * dt * 60.0 } self.rings.retain(|r| r.0 < 50.0);
-        self.drain_notes();
+        self.drain_notes(); if std::env::var("TC_QUIET").is_ok() { self.toasts.clear(); self.g.toasts.clear(); }
         for t in self.g.toasts.drain(..).collect::<Vec<_>>() { self.toast(t.0, &t.1, hex(&t.2)) }
         self.save_t += dt; if self.save_t > 20.0 { self.save_t = 0.0; self.save(); }
         self.hist_t += dt; if self.hist_t > 60.0 || self.hist.is_empty() { self.hist_t = 0.0; self.hist.push((now_ms(), self.g.c.eps.log10().max(0.0))); if self.hist.len() > 120 { self.hist.remove(0); } }
@@ -133,7 +141,7 @@ impl App {
         unsafe { get_internal_gl().quad_gl.scissor(None); }
         self.clip = Rect::new(0.0, 0.0, self.lw, self.lh);
         // scrolling: wheel, drag
-        if self.sheet == Sheet::None {
+        if !modal {
             let max = (content_h + 20.0 - (bot - top)).max(0.0); let mut s = sc;
             let (_, wy) = mouse_wheel(); if wy != 0.0 { s -= wy.signum() * 60.0 }
             if self.down && self.dragging && self.press_y > top && self.press_y < bot { s = self.press_scroll - self.drag }
@@ -144,8 +152,8 @@ impl App {
         self.draw_toasts(dt, top);
         if let Some(f) = self.flash.as_mut() { f.t += dt; } self.draw_flash();
         if self.prestige_fx > 0.0 { self.prestige_fx -= dt; let a = (self.prestige_fx / 1.2).clamp(0.0, 1.0) as f32; self.gfx.rect(0.0, 0.0, self.lw, self.lh, alpha(WHITE, a * a)); }
-        if self.sheet != Sheet::None { crate::screens::sheet(self) }
-        if let Some(_) = self.dlg { crate::screens::dialogue(self) }
+        if modal { self.click = m_click; self.pressed = m_pressed; }
+        if self.dlg.is_some() { crate::screens::dialogue(self) } else if self.sheet != Sheet::None { crate::screens::sheet(self) }
     }
     fn last_not(&self) -> String { match crate::fmt::NOTATION.load(std::sync::atomic::Ordering::Relaxed) { 1 => "sci".into(), 2 => "eng".into(), _ => "suffix".into() } }
     pub fn save(&mut self) { self.g.s.last = now_ms(); if let Err(e) = crate::save::save(&self.g.s) { self.toast(format!("Saving failed: {e}"), "cross", c("red")) } }
@@ -237,7 +245,7 @@ impl App {
             // a dot when something is waiting there
             let dot = match *k { "engine" => self.g.daily_ready() || self.g.s.ev.cur.is_some(), "crew" => (!self.g.story_done() && self.g.missions_done(self.g.s.story.ch as usize)) || self.g.s.pets.eggs.iter().any(|e| e.t <= 0.0), "prestige" => self.g.can_prestige("reb") && self.g.s.cnt.reb == 0.0, _ => false };
             if dot { self.gfx.rect(bx + bw / 2.0 + 10.0, y + 10.0, 7.0, 7.0, INK); self.gfx.rect(bx + bw / 2.0 + 11.0, y + 11.0, 5.0, 5.0, c("gold")) }
-            if self.hit(Rect::new(bx, y + 4.0, bw, 58.0)) { if self.tab == *k { self.scroll.insert(self.scroll_key(), 0.0); } self.tab = k.to_string(); crate::sound::sfx("tab", &self.g.s.set) }
+            if self.hit(Rect::new(bx, y + 4.0, bw, 58.0)) { self.input_key.clear(); if self.tab == *k { self.scroll.insert(self.scroll_key(), 0.0); } self.tab = k.to_string(); crate::sound::sfx("tab", &self.g.s.set) }
         }
     }
     fn draw_floats(&mut self, dt: f64) {
@@ -247,16 +255,17 @@ impl App {
     }
     fn draw_toasts(&mut self, dt: f64, top: f32) {
         for t in self.toasts.iter_mut() { t.t += dt } self.toasts.retain(|t| t.t < 3.2);
-        let mut y = top + 4.0;
+        let mut y = top + 4.0; let mut rects = vec![];
         for t in self.toasts.clone() {
             let a = if t.t < 0.2 { (t.t / 0.2) as f32 } else if t.t > 2.8 { ((3.2 - t.t) / 0.4) as f32 } else { 1.0 };
             let maxw = self.cw - 40.0; let tw = self.gfx.tw(&t.text, 14.0, 0).min(maxw - 40.0); let h = self.gfx.wrap_h(&t.text, maxw - 40.0, 14.0, 0) + 12.0; let w = tw + 44.0; let x = self.x0 + (self.cw - w) / 2.0;
             self.gfx.rect(x - 3.0, y - 3.0, w + 6.0, h + 6.0, alpha(INK, a)); self.gfx.rect(x, y, w, h, alpha(c("p1"), a)); self.gfx.rect(x, y, w, 3.0, alpha(c("p3"), a)); self.gfx.rect(x, y + h - 3.0, w, 3.0, alpha(t.col, a));
             let k = self.gfx.scale; self.gfx.spr(&t.spr, (x + 8.0) * k, (y + h / 2.0 - 10.0) * k, 20.0 * k, alpha(WHITE, a));
             self.gfx.wrap(&t.text, x + 34.0, y + 6.0, maxw - 40.0, 14.0, alpha(c("txt"), a), 0);
-            if self.hit(Rect::new(x, y, w, h)) { if let Some(tt) = self.toasts.iter_mut().find(|q| q.text == t.text) { tt.t = 3.1 } }
+            rects.push((Rect::new(x - 3.0, y - 3.0, w + 6.0, h + 6.0), t.text.clone()));
             y += h + 8.0;
         }
+        self.toast_rects = rects;
     }
     fn draw_flash(&mut self) {
         let Some(f) = self.flash.clone() else { return }; if f.t > 2.6 { self.flash = None; return }

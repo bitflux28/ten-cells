@@ -18,14 +18,14 @@ fn item(a: &mut App, y: f32, spr: &str, name: &str, desc: &str, btn: &str, ok: b
     let dh = a.gfx.wrap_h(desc, tw, 13.0, 0) + if extra.is_empty() { 0.0 } else { 18.0 }; let h = (dh + 34.0).max(62.0);
     a.gfx.panel(x, y, w, h, if owned { hex("#15233a") } else { c("p1") });
     a.spr(spr, x + 12.0, y + 14.0, 32.0);
-    a.gfx.text(name, x + 56.0, y + 10.0, 15.0, if owned { c("green") } else { WHITE }, 1);
+    let nm = a.gfx.fit(name, tw + if owned { 30.0 } else { 0.0 }, 15.0, 1); a.gfx.text(&nm, x + 56.0, y + 10.0, 15.0, if owned { c("green") } else { WHITE }, 1);
     a.gfx.wrap(desc, x + 56.0, y + 30.0, tw, 13.0, c("mist"), 0);
-    if !extra.is_empty() { a.gfx.text(extra, x + 56.0, y + 30.0 + dh - 18.0, 12.0, c("faint"), 0); }
+    if !extra.is_empty() { let ex = a.gfx.fit(extra, tw, 12.0, 0); a.gfx.text(&ex, x + 56.0, y + 30.0 + dh - 18.0, 12.0, c("faint"), 0); }
     let clicked = if owned { a.gfx.text_r("Owned", x + w - 16.0, y + h / 2.0 - 7.0, 14.0, c("green"), 1); false } else { a.btn(x + w - bw - 10.0, y + (h - 44.0) / 2.0, bw, 44.0, btn, if ok { "on" } else { "" }, ok) };
     (h + 8.0, clicked)
 }
-fn title(a: &App, y: f32, t: &str) -> f32 { a.gfx.text_sh(t, a.x0 + 14.0, y, 18.0, WHITE, 1); 28.0 }
-fn muted(a: &App, y: f32, t: &str) -> f32 { a.gfx.wrap(t, a.x0 + 14.0, y, a.cw - 28.0, 14.0, c("mist"), 0) + 6.0 }
+fn title(a: &App, y: f32, t: &str) -> f32 { let w = a.gfx.tw(t, 18.0, 1); a.gfx.rect(a.x0 + 8.0, y - 4.0, w + 16.0, 28.0, alpha(INK, 0.72)); a.gfx.text_sh(t, a.x0 + 14.0, y, 18.0, WHITE, 1); 30.0 }
+fn muted(a: &App, y: f32, t: &str) -> f32 { let h = a.gfx.wrap_h(t, a.cw - 28.0, 14.0, 0); a.gfx.rect(a.x0 + 8.0, y - 4.0, a.cw - 16.0, h + 6.0, alpha(INK, 0.72)); a.gfx.wrap(t, a.x0 + 14.0, y, a.cw - 28.0, 14.0, c("mist"), 0) + 8.0 }
 
 pub fn draw(a: &mut App, y: f32) -> f32 {
     let y0 = y; let tab = a.tab.clone();
@@ -130,8 +130,9 @@ fn engine(a: &mut App, mut y: f32) -> f32 {
     let mut shown_next = false;
     for i in 0..NG {
         let vis = a.g.gen_visible(i);
-        if !vis { if !shown_next { shown_next = true; a.gfx.panel(x, y, w, 50.0, c("p1")); a.spr("question", x + 12.0, y + 11.0, 28.0); a.gfx.text("Unknown signal", x + 52.0, y + 9.0, 15.0, c("faint"), 1);
-            let c0 = a.g.gen_cost_n(i - 1, 1.0); let e = eta(&a.g, c0); a.gfx.text(&format!("Own one {} to reveal the next maker{}", data().gens[i - 1].n, if e.is_empty() { " (you can afford one now)".to_string() } else { format!(" (affordable {e})") }), x + 52.0, y + 29.0, 12.0, c("mist"), 0); y += 58.0; } continue }
+        if !vis { if !shown_next { shown_next = true; a.gfx.panel(x, y, w, 66.0, c("p1")); a.spr("question", x + 12.0, y + 18.0, 28.0); a.gfx.text("Unknown signal", x + 52.0, y + 9.0, 15.0, c("faint"), 1);
+            let c0 = a.g.gen_cost_n(i - 1, 1.0); let e = eta(&a.g, c0); let l1 = a.gfx.fit(&format!("Own one {} to reveal the next maker", data().gens[i - 1].n), w - 64.0, 12.0, 0); a.gfx.text(&l1, x + 52.0, y + 29.0, 12.0, c("mist"), 0);
+            a.gfx.text(&if e.is_empty() { "You can afford one now".to_string() } else { format!("Affordable {e}") }, x + 52.0, y + 45.0, 12.0, c("cyan"), 0); y += 74.0; } continue }
         let g = &a.g; let gen = &data().gens[i]; let own = g.s.gens[i]; let n = if a.buy == 0.0 { g.gen_max_n(i).max(1.0) } else { a.buy }; let cost = g.gen_cost_n(i, n); let ok = cost.lte(g.s.energy) && g.gen_allowed(i);
         let prod = g.c.prod[i].mulf(g.c.sp); let next = g.next_mile(own); let prev = if own >= 25.0 { [0.0, 25.0, 50.0, 100.0, 150.0, 200.0, 250.0, 300.0].iter().rev().find(|t| **t <= own).copied().unwrap_or(0.0) } else { 0.0 };
         let e = if ok { String::new() } else { eta(g, cost) }; let hue = App::gen_hue(i);
@@ -141,7 +142,7 @@ fn engine(a: &mut App, mut y: f32) -> f32 {
         a.gfx.bar(x + 60.0, y + 50.0, w - 190.0, 10.0, ((own - prev) / (next - prev)) as f32, hue); a.gfx.text(&format!("{}", next), x + w - 124.0, y + 50.0, 10.0, c("faint"), 2);
         let lab = format!("{}{}\n{}", if a.buy == 0.0 { format!("+{} ", group(n as i64)) } else if n > 1.0 { format!("+{} ", n) } else { String::new() }, fmt(cost), if e.is_empty() { "Buy".into() } else { e });
         if a.btn(x + w - 116.0, y + 13.0, 106.0, 48.0, &lab, if ok { "on" } else { "" }, ok) { if a.g.buy_gen(i, a.buy) > 0.0 { a.g.calc(); sfx(a, "buy") } }
-        if a.down && a.hold_secs() > 0.35 && a.hover(Rect::new(x + w - 116.0, y + 13.0, 106.0, 48.0)) && ok && (a.time * 10.0) as i64 % 2 == 0 { a.g.buy_gen(i, a.buy); }
+        if a.down && !a.dragging && a.hold_secs() > 0.35 && a.hover(Rect::new(x + w - 116.0, y + 13.0, 106.0, 48.0)) && ok && (a.time * 10.0) as i64 % 2 == 0 { a.g.buy_gen(i, a.buy); }
         y += 82.0;
     }
     y - y0
@@ -202,8 +203,8 @@ fn auto_page(a: &mut App, mut y: f32) -> f32 {
         let (h, t) = row(a, y, &Game::auto_name(&k), on); if t { if let Some(i) = k.strip_prefix('g').and_then(|s| s.parse::<usize>().ok()) { a.g.s.auto.gens[i] = if on { 0.0 } else { 1.0 } } else { a.g.s.auto.set_on(&k, !on) } } y += h;
     }
     if a.g.bh_on() {
-        a.gfx.panel(x, y, w, 56.0, c("p1")); a.gfx.text(&format!("Feed the Black Hole {}% of your energy per second", a.g.s.auto.feed), x + 12.0, y + 10.0, 13.0, WHITE, 0);
-        for (i, p) in [0.0, 1.0, 5.0, 10.0, 25.0].iter().enumerate() { if a.btn(x + 12.0 + i as f32 * 62.0, y + 28.0, 56.0, 24.0, &format!("{p}%"), if a.g.s.auto.feed == *p { "vio" } else { "ghost" }, true) { a.g.s.auto.feed = *p } } y += 64.0;
+        a.gfx.panel(x, y, w, 76.0, c("p1")); a.gfx.text(&format!("Feed the Black Hole {}% of your energy per second", a.g.s.auto.feed), x + 12.0, y + 12.0, 13.0, WHITE, 0);
+        for (i, p) in [0.0, 1.0, 5.0, 10.0, 25.0].iter().enumerate() { if a.btn(x + 12.0 + i as f32 * 62.0, y + 34.0, 56.0, 32.0, &format!("{p}%"), if a.g.s.auto.feed == *p { "vio" } else { "ghost" }, true) { a.g.s.auto.feed = *p } } y += 84.0;
     }
     for (k, fl) in [("reb", "autoReb"), ("sing", "autoSing"), ("asc", "autoAsc"), ("tra", "autoTra"), ("inf", "autoInf")] {
         if !a.g.fx.f(fl) { continue }
@@ -281,7 +282,7 @@ fn laws_panel(a: &mut App, mut y: f32) -> f32 {
     if !a.g.laws_open() { return 0.0 } let y0 = y; let (x, w) = (a.x0 + 8.0, a.cw - 16.0);
     y += title(a, y, &format!("Reality Laws {}/{}", a.g.s.laws.len(), a.g.fx.law_slots)) - 4.0;
     y += muted(a, y, &if a.g.s.law_cd > 0.0 { format!("Reality settles in {}s", a.g.s.law_cd.ceil()) } else { "Tap a law to enact or repeal it. Each one is a boon with a cost.".into() });
-    for l in data().laws.clone() { let on = a.g.law(&l.id); a.gfx.panel(x, y, w, 62.0, if on { hex("#2a1e4a") } else { c("p1") }); a.gfx.text(&l.n, x + 12.0, y + 8.0, 14.0, if on { c("mag") } else { WHITE }, 1); a.gfx.text(&format!("+ {}", l.b), x + 12.0, y + 28.0, 12.0, c("green"), 0); a.gfx.text(&format!("− {}", l.d), x + 12.0, y + 44.0, 12.0, c("red"), 0);
+    for l in data().laws.clone() { let on = a.g.law(&l.id); a.gfx.panel(x, y, w, 62.0, if on { hex("#2a1e4a") } else { c("p1") }); a.gfx.text(&l.n, x + 12.0, y + 8.0, 14.0, if on { c("mag") } else { WHITE }, 1); let (lb, ld) = (a.gfx.fit(&format!("+ {}", l.b), w - 84.0, 12.0, 0), a.gfx.fit(&format!("− {}", l.d), w - 84.0, 12.0, 0)); a.gfx.text(&lb, x + 12.0, y + 28.0, 12.0, c("green"), 0); a.gfx.text(&ld, x + 12.0, y + 44.0, 12.0, c("red"), 0);
         if a.toggle(x + w - 60.0, y + 18.0, on) { if a.g.toggle_law(&l.id) { sfx(a, "ab") } else { sfx(a, "bad") } } y += 70.0; }
     y - y0 + 6.0
 }
@@ -293,7 +294,7 @@ fn chal_page(a: &mut App, mut y: f32) -> f32 {
         let done = a.g.s.chal.done.get(&ch.id).copied().unwrap_or(0.0); let active = a.g.s.chal.a.as_ref().map(|z| z.id == ch.id).unwrap_or(false);
         a.gfx.panel(x, y, w, 104.0, if active { hex("#3a1a2e") } else { c("p1") }); a.spr("swords", x + 12.0, y + 12.0, 28.0);
         a.gfx.text(&format!("{} {}", ch.n, "★".repeat(0)), x + 50.0, y + 10.0, 15.0, WHITE, 1); a.gfx.text(&format!("Level {}/3", done), x + w - 90.0, y + 12.0, 12.0, c("gold"), 2);
-        a.gfx.text(&ch.d, x + 50.0, y + 32.0, 12.0, c("mist"), 0); a.gfx.text(&format!("Reward: {}", ch.rw), x + 50.0, y + 50.0, 12.0, c("green"), 0);
+        let l1 = a.gfx.fit(&ch.d, w - 60.0, 12.0, 0); a.gfx.text(&l1, x + 50.0, y + 32.0, 12.0, c("mist"), 0); let l2 = a.gfx.fit(&format!("Reward: {}", ch.rw), w - 60.0, 12.0, 0); a.gfx.text(&l2, x + 50.0, y + 50.0, 12.0, c("green"), 0);
         for l in 1..=3u32 { let ok = a.g.s.chal.a.is_none() && done >= l as f64 - 1.0; if a.btn(x + 50.0 + (l - 1) as f32 * 82.0, y + 68.0, 76.0, 30.0, &format!("Start {}", "I".repeat(l as usize)), if done >= l as f64 { "green" } else if ok { "on" } else { "" }, ok) { a.sheet = Sheet::Confirm(format!("Start {} {}?", ch.n, "I".repeat(l as usize)), "This restarts your run (like a Rebirth without a reward) until you reach the goal or leave.".into(), "Start".into(), format!("chal:{}:{}", ch.id, l)) } }
         y += 112.0;
     }
@@ -324,8 +325,8 @@ fn dims(a: &mut App, mut y: f32) -> f32 {
     for (i, d) in ds.iter().enumerate() {
         let on = a.g.dim_on(&d.id); a.gfx.panel(x, y, w, 84.0, c("p1")); a.world(&d.id, x + 10.0, y + 10.0, 64.0, !on);
         a.gfx.text(&d.n, x + 84.0, y + 10.0, 16.0, if on { hex(&d.col) } else { c("faint") }, 1);
-        if on { a.gfx.text(&format!("{} {} · +{}/s", fmt(a.g.s.dims[&d.id].r), d.res, fmt(a.g.dim_rate(&d.id))), x + 84.0, y + 34.0, 12.0, c("txt"), 2); a.gfx.text(&d.eff, x + 84.0, y + 54.0, 12.0, c("mist"), 0); }
-        else { a.gfx.text(&d.mech, x + 84.0, y + 34.0, 12.0, c("faint"), 0); a.gfx.text("Locked", x + 84.0, y + 54.0, 12.0, c("faint"), 0); }
+        let tw = w - 96.0; if on { let l1 = a.gfx.fit(&format!("{} {} · +{}/s", fmt(a.g.s.dims[&d.id].r), d.res, fmt(a.g.dim_rate(&d.id))), tw, 12.0, 2); a.gfx.text(&l1, x + 84.0, y + 34.0, 12.0, c("txt"), 2); let l2 = a.gfx.fit(&d.eff, tw, 12.0, 0); a.gfx.text(&l2, x + 84.0, y + 54.0, 12.0, c("mist"), 0); }
+        else { let l = a.gfx.fit(&d.mech, tw, 12.0, 0); a.gfx.text(&l, x + 84.0, y + 34.0, 12.0, c("faint"), 0); a.gfx.text("Locked", x + 84.0, y + 54.0, 12.0, c("faint"), 0); }
         if on && a.hit(Rect::new(x, y, w, 84.0)) { a.dim_sel = Some(i); a.scroll.insert(a.scroll_key(), 0.0); }
         y += 92.0;
     }
@@ -373,7 +374,7 @@ fn arts(a: &mut App, mut y: f32) -> f32 {
         if l > 0.0 || !ar.secret { a.gfx.panel(x, y, w, 58.0, c("p1")); if l > 0.0 { a.spr(&format!("{spr}@r{}", ar.r), x + 12.0, y + 13.0, 32.0); } else { a.spr("question", x + 12.0, y + 13.0, 32.0); }
             let rc = [c("mist"), c("cyan"), c("vio"), c("gold"), c("mag")][ar.r]; a.gfx.text(if l > 0.0 { &ar.n } else { "Undiscovered" }, x + 56.0, y + 9.0, 14.0, if l > 0.0 { WHITE } else { c("faint") }, 1);
             a.gfx.text(&format!("{}{}", data().rar[ar.r], if l > 0.0 { format!(" · Lv {}", l) } else { String::new() }), x + w - 130.0, y + 10.0, 12.0, rc, 0);
-            if l > 0.0 { a.gfx.text(&ar.d, x + 56.0, y + 31.0, 12.0, c("mist"), 0); } y += 66.0 } }
+            if l > 0.0 { let d = a.gfx.fit(&ar.d, w - 66.0, 12.0, 0); a.gfx.text(&d, x + 56.0, y + 31.0, 12.0, c("mist"), 0); } y += 66.0 } }
     y - y0
 }
 
@@ -476,7 +477,7 @@ fn stat_page(a: &mut App, mut y: f32) -> f32 {
     let rows: Vec<(String, String)> = vec![("Started on".into(), date(s.started)), ("Days since start".into(), group(((now_ms() - s.started) / 864e5) as i64)), ("Beat the game".into(), if s.st.beat > 0.0 { date(s.st.beat) } else { "Not yet".into() }), ("Ultra Prestiges".into(), format!("{}", s.cnt.ult)),
         ("Time played".into(), fmt_t(s.st.play)), ("This run".into(), fmt_t(s.st.run)), ("Energy this run".into(), fmt(s.run_e)), ("Lifetime energy".into(), fmt(s.life_e)), ("Best energy/s".into(), fmt(s.st.max_eps)), ("Game speed".into(), format!("×{:.2}", g.c.sp)),
         ("Reactor taps".into(), group(s.st.taps as i64)), ("Critical taps".into(), group(s.st.crits as i64)), ("Upgrades bought".into(), format!("{}", s.st.upg)), ("Events claimed".into(), format!("{}", s.st.ev)), ("Abilities used".into(), format!("{}", s.st.ab)), ("Bosses defeated".into(), format!("{}", s.st.kills)),
-        ("Rebirths".into(), format!("{}", s.cnt.reb)), ("Fastest Rebirth".into(), if s.cnt.reb > 0.0 { fmt_t(s.st.best_reb) } else { "—".into() }), ("Fragments earned".into(), fmt(s.frag_life)), ("Singularities".into(), format!("{}", s.cnt.sing)), ("Ascensions".into(), format!("{}", s.cnt.asc)),
+        ("Rebirths".into(), format!("{}", s.cnt.reb)), ("Fastest Rebirth".into(), if s.cnt.reb > 0.0 && s.st.best_reb < 1e11 { fmt_t(s.st.best_reb) } else { "—".into() }), ("Fragments earned".into(), fmt(s.frag_life)), ("Singularities".into(), format!("{}", s.cnt.sing)), ("Ascensions".into(), format!("{}", s.cnt.asc)),
         ("Transcendences".into(), format!("{}", s.cnt.tra)), ("Infinities".into(), format!("{}", s.cnt.inf)), ("Challenges completed".into(), format!("{}", s.st.chal)), ("Dimensions unlocked".into(), format!("{}/{}", g.dims_unlocked(), data().dims.len())),
         ("Research done".into(), format!("{}/32", s.res.len())), ("Artifacts found".into(), format!("{}/{}", s.arts.len(), data().arts.len())), ("Achievements".into(), format!("{}/{}", g.ach_n, data().ach.len())), ("Offline cap".into(), format!("{}h", g.off_h())), ("Milestone multiplier".into(), format!("×{:.3}", g.c.mp))];
     let h = rows.len() as f32 * 24.0 + 20.0; a.gfx.panel(x, y, w, h, c("p1")); let mut yy = y + 12.0;
@@ -498,7 +499,7 @@ fn achs(a: &mut App, mut y: f32) -> f32 {
     y += muted(a, y, &format!("{}/{} unlocked · each one +2% production", a.g.ach_n, data().ach.len()));
     for ac in data().ach.clone() { let done = a.g.s.ach.contains_key(&ac.id); let hid = ac.h && !done;
         a.gfx.panel(x, y, w, 50.0, if done { hex("#1b2a3a") } else { c("p1") }); a.spr(if done { "trophy" } else { "lock" }, x + 12.0, y + 13.0, 24.0);
-        a.gfx.text(if hid { "???" } else { &ac.n }, x + 46.0, y + 8.0, 14.0, if done { c("gold") } else { c("faint") }, 1); a.gfx.text(if hid { "A hidden achievement" } else { &ac.d }, x + 46.0, y + 28.0, 12.0, c("mist"), 0); y += 56.0 }
+        a.gfx.text(if hid { "???" } else { &ac.n }, x + 46.0, y + 8.0, 14.0, if done { c("gold") } else { c("faint") }, 1); let d = a.gfx.fit(if hid { "A hidden achievement" } else { &ac.d }, w - 56.0, 12.0, 0); a.gfx.text(&d, x + 46.0, y + 28.0, 12.0, c("mist"), 0); y += 56.0 }
     y - y0
 }
 fn badges(a: &mut App, mut y: f32) -> f32 {
@@ -551,14 +552,14 @@ fn settings(a: &mut App, mut y: f32) -> f32 {
 
 // ============================ SHEETS ============================
 pub fn sheet(a: &mut App) {
-    let sh = a.sheet.clone(); a.gfx.rect(0.0, 0.0, a.lw, a.lh, alpha(INK, 0.6));
+    let sh = a.sheet.clone(); if a.last_sheet != sh { a.last_sheet = sh.clone(); a.sheet_scroll = 0.0 } a.gfx.rect(0.0, 0.0, a.lw, a.lh, alpha(INK, 0.6));
     let (x, w) = (a.x0 + 10.0, a.cw - 20.0);
     let body: (String, String) = match &sh {
         Sheet::Confirm(t, d, _, _) | Sheet::Info(t, d) => (t.clone(), d.clone()),
         Sheet::Export(code) => ("Export save".into(), format!("This code is on your clipboard. Keep it somewhere safe; Import brings it back here or in the web version.\n\n{}…", &code[..code.len().min(120)])),
         Sheet::Import => ("Import save".into(), "Paste a save code from this game or the web version (Ctrl+V), then press Load. This replaces your current game.".into()),
         Sheet::Welcome(t) => ("Welcome back".into(), t.clone()),
-        Sheet::Terms => ("Terms".into(), strip_html(&data().tos)),
+        Sheet::Terms => ("Terms".into(), "It's free. No accounts, no ads, no purchases. Play as much as you like.\n\nYour save lives on this computer, in Documents › Ten Cells. Use Export in Stats › Settings to keep a backup somewhere else.\n\nNo data collected. The game never connects to the internet. No tracking, no analytics, nothing leaves your computer.\n\nFlashing lights and sound. There are flashes and music. If they bother you, turn off Animations and effects or the sound in Stats › Settings, and take breaks.\n\nAs is. This is a hobby game provided as is, without any warranty. Updates may change balance or features, and in rare cases a save could be lost.\n\nPlay fair. Editing your save or cheating only spoils your own fun. Go for it if you want, just don't expect it to be supported.".into()),
         Sheet::Reset => ("Erase everything?".into(), "All progress, prestige layers, artifacts and achievements will be deleted. This can't be undone.".into()),
         Sheet::Keys => ("Keyboard".into(), "Space: tap the reactor\n1 to 6: switch tabs\nG: buy every energy maker you can\nU: buy all affordable upgrades\nA: fire every ready ability\n+ and −: screen size\nF or F11: full screen\nEsc: close this".into()),
         Sheet::Prestige(k) => { let (_, n, cur, _) = *LAYERS.iter().find(|l| l.0 == k).unwrap(); (format!("{n}?"), format!("You get {} {}.\n\n{}", fmt(a.g.layer_gain(k)), cur, data().ldesc[k.as_str()][2].as_str().unwrap_or(""))) }
@@ -570,7 +571,7 @@ pub fn sheet(a: &mut App) {
     a.gfx.text_sh(&body.0, x + 14.0, y + 14.0, 20.0, WHITE, 1);
     let k = a.gfx.scale; let clip_h = h - 110.0;
     unsafe { get_internal_gl().quad_gl.scissor(Some(((x * k) as i32, ((y + 46.0) * k) as i32, (w * k) as i32, (clip_h * k) as i32))); }
-    let max_s = (th - clip_h + 10.0).max(0.0); let (_, wy) = mouse_wheel(); a.sheet_scroll = (a.sheet_scroll - wy.signum() * 40.0).clamp(0.0, max_s); if a.down && a.dragging { a.sheet_scroll = (a.sheet_scroll - (a.my - a.my) ).clamp(0.0, max_s) }
+    let max_s = (th - clip_h + 10.0).max(0.0); let (_, wy) = mouse_wheel(); a.sheet_scroll = (a.sheet_scroll - wy.signum() * 40.0).clamp(0.0, max_s); if a.down && a.dragging { a.sheet_scroll = (a.press_scroll - a.drag).clamp(0.0, max_s) }
     a.gfx.wrap(&body.1, x + 14.0, y + 50.0 - a.sheet_scroll, w - 28.0, 14.0, c("txt"), 0);
     unsafe { get_internal_gl().quad_gl.scissor(None); }
     let by = y + h - 56.0; let bw = (w - 34.0) / 2.0;
@@ -593,4 +594,4 @@ fn confirm(a: &mut App, act: &str) {
     else if act == "omega" { if a.g.buy_uu("omega") { a.flash = Some(crate::ui::Flash { title: "The Omega Engine".into(), sub: "You beat Ten Cells!".into(), col: c("gold"), t: 0.0 }); sfx(a, "prestige") } }
     else if let Some(r) = act.strip_prefix("chal:") { let (id, l) = r.split_once(':').unwrap(); if a.g.start_chal(id, l.parse().unwrap_or(1)) { a.tab = "engine".into() } }
 }
-fn strip_html(s: &str) -> String { let mut o = String::new(); let mut tag = false; for ch in s.replace("</p>", "\n\n").replace("<br>", "\n").replace("<li>", "• ").replace("</li>", "\n").chars() { if ch == '<' { tag = true } else if ch == '>' { tag = false } else if !tag { o.push(ch) } } o.trim().to_string() }
+#[allow(dead_code)] fn strip_html(s: &str) -> String { let mut o = String::new(); let mut tag = false; for ch in s.replace("</p>", "\n\n").replace("<br>", "\n").replace("<li>", "• ").replace("</li>", "\n").chars() { if ch == '<' { tag = true } else if ch == '>' { tag = false } else if !tag { o.push(ch) } } o.trim().to_string() }

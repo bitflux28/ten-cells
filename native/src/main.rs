@@ -4,7 +4,7 @@ mod assets; mod big; mod data; mod fmt; mod game; mod gfx; mod save; mod screens
 use macroquad::prelude::*;
 
 fn conf() -> Conf {
-    Conf { window_title: "Ten Cells".into(), window_width: 460, window_height: 820, high_dpi: true, window_resizable: true, sample_count: 1,
+    Conf { window_title: "Ten Cells".into(), window_width: std::env::var("TC_W").ok().and_then(|v| v.parse().ok()).unwrap_or(460), window_height: std::env::var("TC_H").ok().and_then(|v| v.parse().ok()).unwrap_or(820), high_dpi: true, window_resizable: true, sample_count: 1,
         icon: Some(miniquad::conf::Icon { small: icon(16), medium: icon(32), big: icon(64) }), ..Default::default() }
 }
 /// the app icon, from the 512px web icon
@@ -27,6 +27,7 @@ async fn main() {
     if bak { app.toast("Loaded your save from the backup or the older Windows app", "check", gfx::c("gold")) } else if corrupt { app.toast("A damaged save was found and skipped", "cross", gfx::c("red")) }
     let shot = std::env::var("TC_SHOT").ok(); let frames: usize = std::env::var("TC_FRAMES").ok().and_then(|v| v.parse().ok()).unwrap_or(40);
     if let Ok(t) = std::env::var("TC_TAB") { let (t, s) = t.split_once(':').map(|(a, b)| (a.to_string(), Some(b.to_string()))).unwrap_or((t, None)); app.tab = t.clone(); if let Some(s) = s { app.set_sub(&t, &s) } if shot.is_some() { app.sheet = ui::Sheet::None } }
+    if let Ok(v) = std::env::var("TC_SCROLL") { let k = app.scroll_key(); app.scroll.insert(k, v.parse().unwrap_or(0.0)); }
     if shot.is_none() { sound::init(&app.g.s.set).await; }
     let _ = args;
     let mut n = 0;

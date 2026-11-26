@@ -16,6 +16,13 @@ pub fn c(name: &str) -> Color {
         "green" => "#4fe89a", "mag" => "#ff5fd0", "txt" => "#e6ebff", "mist" => "#a3a8d6", "faint" => "#6e72a8", "core" => "#c4f3ff", "dark" => "#110e30", "ink" => "#0b0a1f", _ => "#ffffff" })
 }
 
+/// swap characters the pixel fonts don't have for ones they do
+pub fn clean(s: &str) -> std::borrow::Cow<'_, str> {
+    if s.chars().all(|c| (c as u32) < 0x2070) { return std::borrow::Cow::Borrowed(s) }
+    let mut o = String::with_capacity(s.len());
+    for c in s.chars() { match c { '→' => o.push('›'), '←' => o.push('‹'), '★' => o.push('*'), '∞' => o.push_str("inf"), '⁴' => o.push_str("^4"), '₀' => o.push('0'), '₁' => o.push('1'), c if (c as u32) >= 0x2190 => {}, c => o.push(c) } }
+    std::borrow::Cow::Owned(o)
+}
 pub struct Gfx {
     pub sprites: Texture2D, pub spr_idx: HashMap<String, usize>, pub fonts: [Font; 3], tex: HashMap<String, Texture2D>, pub atom: Image, pub atom_tex: Texture2D, pub out: Image,
     pub scale: f32,
@@ -51,14 +58,20 @@ impl Gfx {
     // ---------------- text ----------------
     /// font: 0 regular, 1 bold, 2 numbers
     pub fn text(&self, s: &str, x: f32, y: f32, size: f32, col: Color, font: usize) -> f32 {
-        let sz = (size * self.scale).round() as u16;
+        let s = &*clean(s); let sz = (size * self.scale).round() as u16;
         let dims = measure_text(s, Some(&self.fonts[font]), sz, 1.0);
         draw_text_ex(s, (x * self.scale).round(), (y * self.scale + dims.offset_y).round(), TextParams { font: Some(&self.fonts[font]), font_size: sz, color: col, ..Default::default() });
         dims.width / self.scale
     }
     /// text with the web version's hard 2px drop shadow
     pub fn text_sh(&self, s: &str, x: f32, y: f32, size: f32, col: Color, font: usize) -> f32 { self.text(s, x + 2.0, y + 2.0, size, INK, font); self.text(s, x, y, size, col, font) }
-    pub fn tw(&self, s: &str, size: f32, font: usize) -> f32 { measure_text(s, Some(&self.fonts[font]), (size * self.scale).round() as u16, 1.0).width / self.scale }
+    /// cut text to fit a width, ending in …
+    pub fn fit(&self, s: &str, w: f32, size: f32, font: usize) -> String {
+        if self.tw(s, size, font) <= w { return s.to_string() }
+        let mut t: Vec<char> = s.chars().collect(); while !t.is_empty() && self.tw(&format!("{}…", t.iter().collect::<String>()), size, font) > w { t.pop(); }
+        format!("{}…", t.iter().collect::<String>().trim_end())
+    }
+    pub fn tw(&self, s: &str, size: f32, font: usize) -> f32 { let s = &*clean(s); measure_text(s, Some(&self.fonts[font]), (size * self.scale).round() as u16, 1.0).width / self.scale }
     pub fn text_c(&self, s: &str, cx: f32, y: f32, size: f32, col: Color, font: usize) { let w = self.tw(s, size, font); self.text(s, cx - w / 2.0, y, size, col, font); }
     pub fn text_r(&self, s: &str, rx: f32, y: f32, size: f32, col: Color, font: usize) { let w = self.tw(s, size, font); self.text(s, rx - w, y, size, col, font); }
     /// word-wrapped text, returns the height used
