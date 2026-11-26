@@ -451,17 +451,26 @@ body.calm .emb,body.calm .ab.on,body.calm #nav button.sel img,body.calm .tvw .no
 #flash canvas{image-rendering:pixelated}
 .ult-note{margin-bottom:8px}.ult-note b{color:#ff5fd0}
 .tvw .hub{border-radius:50%}
-.tvw .node.own{box-shadow:inset 0 -3px 0 #1c6f99,inset 0 3px 0 #c4f3ff,0 0 10px #45c8f566}
-.tvw .node:not(.own):not(.av):not(.hub){background:#221d5c;border-color:#0b0a1f;box-shadow:inset 0 0 0 2px #4a43a0;color:#8b86c9}
-.tvw .node.lk{opacity:.8}
-/* tree look: nodes take their branch colour, buyable ones glow with their price underneath */
-.tvw .node{overflow:visible}
-.tvw .node.own{color:var(--ink);background:var(--tc,var(--a2));box-shadow:inset 0 -3px 0 #0007,inset 0 3px 0 #fff7,0 0 12px var(--tc,#45c8f5)}
-.tvw .node.av{background:var(--p2);box-shadow:inset 0 -3px 0 #191545,inset 0 0 0 2px var(--tc)}
-.tvw .node.av.on{background:var(--p3);box-shadow:inset 0 -3px 0 #191545,0 0 0 3px var(--tc),0 0 16px var(--tc);animation:bob 1s steps(2) infinite}
-.tvw .node .nc{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:4px;padding:0 5px;font-size:11px;line-height:16px;white-space:nowrap;color:var(--faint);background:#0b0a1fe6;pointer-events:none}
+/* honeycomb tree: flat-top hexagon nodes with the name inside. Dark = not bought yet (price shown), coloured = owned, ? = not reachable yet */
+.tvw .node:not(.hub){--hx:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);width:80px;height:70px;margin-left:-40px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;clip-path:none;overflow:visible;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;color:#fff}
+.tvw .node:not(.hub)::before,.tvw .node:not(.hub)::after{content:'';position:absolute;clip-path:var(--hx)}
+.tvw .node:not(.hub)::before{inset:0;background:var(--ink)}
+.tvw .node:not(.hub)::after{inset:3px;background:#262056;box-shadow:inset 0 -6px 0 #1b1845}
+.tvw .node:not(.hub)>*{position:relative;z-index:1}
+.tvw .node .ni{height:26px;font-size:15px}
+.tvw .node .nn{display:block;max-width:64px;font-style:normal;font-size:10px;line-height:11px;max-height:22px;overflow:hidden;text-align:center;text-shadow:1px 1px 0 var(--ink),-1px 1px 0 var(--ink)}
+.tvw .node .nc{font-size:10px;line-height:12px;color:var(--faint)}
+.tvw .node.own::after{background:var(--tc,#3466f0);box-shadow:inset 0 -6px 0 #0006,inset 0 5px 0 #fff4}
+.tvw .node.own .nn{color:#fff}
+.tvw .node.av.on{filter:drop-shadow(0 0 7px var(--tc));animation:bob 1s steps(2) infinite}
+.tvw .node.av.on::after{background:#312a78;box-shadow:inset 0 -6px 0 #1b1845,inset 0 0 0 3px var(--tc)}
 .tvw .node.av.on .nc{color:var(--green)}
-.tvw .node.lk{opacity:.7}
+.tvw .node.hid .ni{font-size:30px;color:#6f69b8;height:auto}
+.tvw .node.hid::after{background:#1b1845}
+.tvw .node.lk:not(.hid) .nn,.tvw .node.lk:not(.hid) .ni{opacity:.7}
+.tvw .node:active{transform:translateY(2px)}
+.tvw .hub{clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);width:88px;height:76px;margin-left:-44px;border-radius:0;background:var(--tc);box-shadow:none}
+.tvw .hub span{filter:drop-shadow(1px 1px 0 var(--ink))}
 .tv-top span{border-left:3px solid var(--vio)}
 .mid-lock{display:flex;gap:6px;align-items:center;font-size:13px;margin-top:8px}
 
@@ -3169,8 +3178,8 @@ function treeView(key, T, st, act, colOf, extraReq, hubAct) {
   UI.treeDraw = { T, st, colOf, extraReq };
   const nodesH = Object.keys(pos).filter(id => id !== 'ROOT').map(id => {
     const p = pos[id], n = all[id];
-    if (n.hub) return `<button class="node hub ${st(id)}" style="left:${p.X}px;top:${p.Y - 30}px;--tc:${colOf(id)}" data-a="${hubAct}:${n.cat}"><span>${ico(HUB_SPR[n.cat], 36)}</span><em>${n.n}</em></button>`;
-    const s = st(id); return `<button class="node ${s}" style="left:${p.X}px;top:${p.Y - 24}px;--tc:${colOf(id)}" data-a="${act}:${id}" ${s === 'av' ? `data-on="${act === 'node' ? 'ucan' : 'icanb'}|${id}"` : ''}><span>${n.ic}</span>${s === 'av' && act === 'node' ? `<small class="nc n">${fmt(upgCost(UMAP[id]))}</small>` : ''}</button>`;
+    if (n.hub) return `<button class="node hub ${st(id)}" style="left:${p.X}px;top:${p.Y - 38}px;--tc:${colOf(id)}" data-a="${hubAct}:${n.cat}"><span>${ico(HUB_SPR[n.cat], 36)}</span><em>${n.n}</em></button>`;
+    const s = st(id), hid = act === 'node' && s === 'lk' && !UMAP[id].req.every(hasU); return `<button class="node ${s}${hid ? ' hid' : ''}" style="left:${p.X}px;top:${p.Y - 33}px;--tc:${colOf(id)}" data-a="${act}:${id}" ${s === 'av' ? `data-on="${act === 'node' ? 'ucan' : 'icanb'}|${id}"` : ''}><span class="ni">${hid ? '?' : n.ic}</span>${hid || !n.n ? '' : `<em class="nn">${esc(n.n)}</em>`}${s === 'av' && act === 'node' ? `<small class="nc n">${fmt(upgCost(UMAP[id]))}</small>` : ''}</button>`;
   }).join('');
   const top = key === 'upg' ? UI.treeTop || '' : '';
   return `<div class="tv" data-k="${key}">${top}<div class="tvw" id="tvw" data-k="${key}" style="width:${W}px;height:${H}px">
@@ -4163,7 +4172,7 @@ function showUpdate(j) {
   el.innerHTML = `<div class="upd-ic">${ico('arrowup', 28)}</div><div class="grow"><b>${esc(UPD_LORE[Math.abs(hsh('upd' + j.v) * 1e6 | 0) % UPD_LORE.length])} · ${esc(j.v)}</b><small>${stuck ? 'Close the game and open it again to finish updating.' : esc((j.n || [])[0] || 'The cells have learned something new.')}</small></div>${stuck ? '' : '<button class="btn on" id="updgo">Update</button>'}<button class="updx" id="updx" aria-label="Remind me later">✕</button>`;
   document.body.appendChild(el); sfx('ach'); haptic();
   $('#updx').onclick = () => el.remove();
-  const go = $('#updgo'); if (go) go.onclick = () => { try { sessionStorage.setItem('ie_upd', j.v); } catch (e) { } save(); go.disabled = true; el.querySelector('small').textContent = 'Saving and updating…'; setTimeout(() => location.reload(), 250); };
+  const go = $('#updgo'); if (go) go.onclick = () => { try { sessionStorage.setItem('ie_upd', j.v); } catch (e) { } save(); go.disabled = true; el.querySelector('small').textContent = 'Saving and updating…'; const done = () => location.reload(); Promise.race([Promise.all([fetch(location.pathname, { cache: 'reload' }), fetch('index.html', { cache: 'reload' })]), new Promise(r => setTimeout(r, 5000))]).then(done, done); }; // refresh the browser's cached copy first, or the old file comes back and the banner returns
 }
 // after an update: list what changed since the version this save last ran
 function whatsNew() {
