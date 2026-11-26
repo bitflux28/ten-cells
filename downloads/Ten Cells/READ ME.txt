@@ -1,0 +1,6 @@
+Ten Cells for Windows
+
+Unzip this folder anywhere, then double-click "Ten Cells.exe".
+It has its own browser engine built in, so you don't need Chrome, Edge or an internet connection.
+F11 = full screen. Your save is kept in your user profile (AppData\Roaming\Ten Cells).
+If Windows SmartScreen warns about an unknown publisher: More info > Run anyway.
