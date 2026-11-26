@@ -1,1 +1,1 @@
-{"v": "0.21.5", "n": ["Upgrades tab redesigned: a card shop with a Next up card, category filters, progress bar and a collapsible Owned list (the Tree is one tap away)", "Fixed upgrade nodes and Buy buttons never lighting up when affordable"]}
+{"v": "0.21.6", "n": ["Upgrade tree: nodes take their branch colour, buyable ones glow with their price underneath"]}
