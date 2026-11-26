@@ -37,7 +37,7 @@ try:
         nav(pg, 'engine'); assert pg.evaluate("document.querySelectorAll('.gen:not(.locked)').length") == 25
         pg.evaluate("document.querySelectorAll('.gen')[24].scrollIntoView({block:'center'})"); pg.wait_for_timeout(300); pg.screenshot(path=str(out / 'engine-25.png'))
         # upgrade tree draws with 55 new nodes
-        nav(pg, 'upgrades'); pg.wait_for_timeout(400); assert pg.evaluate("document.querySelectorAll('.tvw .node').length") >= 200
+        nav(pg, 'upgrades'); pg.wait_for_timeout(400); pg.click('[data-a="uv:tree"]'); pg.wait_for_timeout(300); assert pg.evaluate("document.querySelectorAll('.tvw .node').length") >= 200
         assert pg.evaluate("['g24_4','a14','a15'].every(id => document.querySelector(`[data-a=\"node:${id}\"]`))"), 'new tree nodes missing'
         assert 'undefined' not in pg.evaluate("document.querySelector('#page').textContent"), 'tree shows undefined'
         assert pg.evaluate("UPG.filter(u => u.cat === 'gen').every(u => !/undefined/.test(nodeIcon(u)))")
