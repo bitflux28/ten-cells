@@ -1,1 +1,1 @@
-{"v": "0.21.4", "n": ["Upgrades: new List view with one-tap buying and filters", "Upgrades: Next button jumps to the cheapest upgrade", "Upgrades: category progress counts, locked rows say what they need"]}
+{"v": "0.21.5", "n": ["Upgrades tab redesigned: a card shop with a Next up card, category filters, progress bar and a collapsible Owned list (the Tree is one tap away)", "Fixed upgrade nodes and Buy buttons never lighting up when affordable"]}
