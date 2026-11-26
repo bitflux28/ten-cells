@@ -34,7 +34,7 @@ try:
         pg.evaluate("S.daily.day = 4; S.daily.last = 'yesterday'; window.__e0 = C.eps.toNumber(); claimDaily(); calc()")
         r = pg.evaluate("[boostOn(), S.daily.bm, Math.round((S.daily.bt - Date.now()) / 3600e3), C.eps.toNumber() / __e0, multParts().some(p => /Daily reward/.test(p[0]))]"); print('double day', r)
         assert r[0] and r[1] == 2 and r[2] == 24 and abs(r[3] - 2) < 0.05 and r[4], r
-        pg.evaluate("S.daily.day = 6; S.daily.last = 'x'; const eggs = S.pets.eggs.length; claimDaily(); window.__eggs = S.pets.eggs.length - eggs"); r = pg.evaluate("[S.daily.bm, __eggs]"); print('crown', r); assert r[0] == 3 and r[1] == 1
+        pg.evaluate("S.daily.day = 6; S.daily.last = 'x'; const eggs = S.pets.eggs.length; claimDaily(); window.__eggs = S.pets.eggs.length - eggs"); r = pg.evaluate("[S.daily.bm, __eggs]"); print('crown', r); assert r[0] == 3 and r[1] == 2
         # survives Ultra
         pg.evaluate("ultraReset()"); assert pg.evaluate("S.daily.day") == 7
         # automation: Auto tab on PC, autopilot perk, timer and multiple rules really fire
