@@ -1,1 +1,1 @@
-{"v": "0.21.9", "n": ["Fixed the update banner coming back after updating: the page now refreshes its cached copy before reloading"]}
+{"v": "0.21.10", "n": ["Windows app: updates are now saved reliably (they could be lost when the game was closed), and the app keeps a small update log to help find problems"]}
