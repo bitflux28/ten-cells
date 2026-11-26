@@ -1,0 +1,5 @@
+# Ten Cells 0.21.3
+
+- More endgame: ten new Ultra upgrades past the Omega Engine, ending with The Last Engine, plus three new achievements
+- Holding or swirling on the atom no longer spams rings and sparks: at most 3 rings at once and fewer sparks
+- The Windows app checks once at launch whether a newer version is available (it only reads a small version file from GitHub)
