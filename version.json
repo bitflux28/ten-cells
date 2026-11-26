@@ -1,1 +1,1 @@
-{"v": "0.21.17", "n": ["Settings: shows the current game version with a Check now button and a switch for automatic update checks, plus new options: floating numbers, a frame-rate counter and keeping the screen awake"]}
+{"v": "0.21.18", "n": ["Settings: choose how often the game auto-saves (off, 5 s, 30 s, 1 min, 5 min) and see when it last saved; Save now is still there", "The game version is now also shown at the bottom of Settings, and the update check falls back to reading the game file if the version file can't be reached"]}
