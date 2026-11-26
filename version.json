@@ -1,1 +1,1 @@
-{"v": "0.21.6", "n": ["Upgrade tree: nodes take their branch colour, buyable ones glow with their price underneath"]}
+{"v": "0.21.7", "n": ["The Windows app now checks for a new version every 2.5 minutes while it is open, not just at launch", "Update messages got a story: a new pulse reaches the Engine"]}
