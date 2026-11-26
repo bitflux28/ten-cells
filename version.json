@@ -1,1 +1,1 @@
-{"v": "0.21.16", "n": ["The game checks for a new version every 30 seconds while you play (it was every 2 minutes)"]}
+{"v": "0.21.17", "n": ["Settings: shows the current game version with a Check now button and a switch for automatic update checks, plus new options: floating numbers, a frame-rate counter and keeping the screen awake"]}
